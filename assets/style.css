@@ -150,6 +150,21 @@ a:hover {
   text-decoration: none;
 }
 
+.fc .no-collection-event td {
+  color: var(--text-muted);
+  background: rgba(98, 112, 107, 0.08);
+}
+
+.fc .no-collection-event .fc-list-event-time,
+.fc .no-collection-event .fc-list-event-title,
+.fc .no-collection-event .fc-list-event-title a {
+  color: var(--text-muted);
+}
+
+.fc .no-collection-event .fc-list-event-dot {
+  border-color: rgba(98, 112, 107, 0.45);
+}
+
 @media (min-width: 700px) {
   .calendar-card {
     padding: clamp(1.25rem, 3vw, 2rem);

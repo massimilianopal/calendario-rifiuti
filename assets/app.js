@@ -10,6 +10,7 @@
         "Il calendario non è ancora configurato. Inserisci la chiave API e gli ID dei calendari in assets/config.js.",
       libraryError:
         "Il calendario non è disponibile in questo momento. Ricarica la pagina per riprovare.",
+      noCollection: "Nessuna raccolta",
       noEvents: "Nessuna raccolta prevista per questo periodo."
     },
     en: {
@@ -20,6 +21,7 @@
         "The calendar has not been configured yet. Add the API key and calendar IDs to assets/config.js.",
       libraryError:
         "The calendar is not available right now. Reload the page to try again.",
+      noCollection: "No collection",
       noEvents: "No collections are scheduled for this period."
     }
   };
@@ -92,6 +94,7 @@
     }
 
     var narrowScreen = window.matchMedia("(max-width: 699px)");
+    var noCollectionEventSource = null;
     var calendar = new window.FullCalendar.Calendar(calendarElement, {
       initialView: narrowScreen.matches ? "listMonth" : "dayGridMonth",
       locale: settings.calendarLocale,
@@ -129,15 +132,40 @@
       }
     });
 
-    calendar.render();
-
     function updateResponsiveView(mediaQuery) {
-      var requiredView = mediaQuery.matches ? "listMonth" : "dayGridMonth";
+      var isMobile = mediaQuery.matches;
+      var requiredView = isMobile ? "listMonth" : "dayGridMonth";
 
-      if (calendar.view.type !== requiredView) {
-        calendar.changeView(requiredView);
+      if (isMobile) {
+        if (calendar.view.type !== requiredView) {
+          calendar.changeView(requiredView);
+        }
+
+        if (!noCollectionEventSource) {
+          noCollectionEventSource = calendar.addEventSource([
+            {
+              title: messages.noCollection,
+              daysOfWeek: [6],
+              startTime: "21:00:00",
+              classNames: ["no-collection-event"],
+              extendedProps: { noCollection: true }
+            }
+          ]);
+        }
+      } else {
+        if (noCollectionEventSource) {
+          noCollectionEventSource.remove();
+          noCollectionEventSource = null;
+        }
+
+        if (calendar.view.type !== requiredView) {
+          calendar.changeView(requiredView);
+        }
       }
     }
+
+    calendar.render();
+    updateResponsiveView(narrowScreen);
 
     if (typeof narrowScreen.addEventListener === "function") {
       narrowScreen.addEventListener("change", updateResponsiveView);
