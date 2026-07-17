@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f6f2e9">
+    <meta
+      name="description"
+      content="Waste collection calendar for holiday home guests."
+    >
+    <title>Waste collection calendar</title>
+    <link rel="stylesheet" href="../assets/style.css">
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.21/index.global.min.js"
+    ></script>
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/@fullcalendar/google-calendar@6.1.21/index.global.min.js"
+    ></script>
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.21/locales/it.global.min.js"
+    ></script>
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.21/locales/en-gb.global.min.js"
+    ></script>
+    <script defer src="../assets/config.js"></script>
+    <script defer src="../assets/app.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#calendar">Skip to the calendar</a>
+
+    <div class="page-shell">
+      <header class="site-header">
+        <div class="header-copy">
+          <p class="eyebrow">A reminder for your stay</p>
+          <h1>Waste collection calendar</h1>
+          <p class="intro">Check the collection days during your stay.</p>
+        </div>
+
+        <nav class="language-switcher" aria-label="Choose language">
+          <a href="../it/" lang="it" hreflang="it">IT</a>
+          <span aria-current="page">EN</span>
+        </nav>
+      </header>
+
+      <main>
+        <section class="calendar-card" aria-label="Waste collection calendar">
+          <p id="calendar-status" class="calendar-status" aria-live="polite" hidden></p>
+          <div id="calendar-error" class="calendar-error" role="alert" hidden></div>
+          <noscript>
+            <p class="calendar-error">
+              JavaScript must be enabled to display the calendar.
+            </p>
+          </noscript>
+          <div id="calendar"></div>
+        </section>
+      </main>
+
+      <footer class="site-footer">
+        <p>Schedule kept up to date through Google Calendar.</p>
+      </footer>
+    </div>
+  </body>
+</html>
