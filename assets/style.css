@@ -189,7 +189,7 @@ a:focus-visible {
 
 .fc .fc-list-table {
   width: 100%;
-  table-layout: fixed;
+  table-layout: auto;
 }
 
 .fc .fc-list-day-cushion {
