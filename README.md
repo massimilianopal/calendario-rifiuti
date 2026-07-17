@@ -57,6 +57,142 @@ Tutti i collegamenti interni e gli asset usano percorsi relativi: il sito
 funziona quindi anche quando GitHub Pages lo pubblica sotto il nome del
 repository, senza dover impostare un URL base.
 
+## Integrazione Divi con altezza automatica
+
+Il calendario invia alla pagina contenitore soltanto la propria altezza, senza
+includere configurazione o dati degli eventi. Il messaggio viene inviato solo
+quando l'iframe è incorporato su `trailverdeeilmare.it`, con o senza `www`.
+
+Incolla il blocco seguente in un modulo **Codice** della pagina italiana di
+Divi:
+
+```html
+<div class="waste-calendar-embed">
+  <iframe
+    id="waste-calendar-frame-it"
+    class="waste-calendar-frame"
+    src="https://massimilianopal.github.io/calendario-rifiuti/it/"
+    title="Calendario raccolta rifiuti"
+    loading="lazy"
+    scrolling="no"
+  ></iframe>
+</div>
+
+<style>
+  .waste-calendar-embed {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .waste-calendar-frame {
+    display: block;
+    width: 100%;
+    height: 700px;
+    border: 0;
+    overflow: hidden;
+  }
+</style>
+
+<script>
+  (function () {
+    "use strict";
+
+    var iframe = document.getElementById("waste-calendar-frame-it");
+
+    if (!iframe) {
+      return;
+    }
+
+    window.addEventListener("message", function (event) {
+      if (
+        event.origin !== "https://massimilianopal.github.io" ||
+        event.source !== iframe.contentWindow ||
+        !event.data ||
+        event.data.type !== "waste-calendar:resize"
+      ) {
+        return;
+      }
+
+      var height = Number(event.data.height);
+
+      if (!Number.isFinite(height) || height < 200 || height > 10000) {
+        return;
+      }
+
+      iframe.style.height = Math.ceil(height) + "px";
+    });
+  })();
+</script>
+```
+
+Incolla questo secondo blocco nel modulo **Codice** della pagina inglese di
+Divi:
+
+```html
+<div class="waste-calendar-embed">
+  <iframe
+    id="waste-calendar-frame-en"
+    class="waste-calendar-frame"
+    src="https://massimilianopal.github.io/calendario-rifiuti/en/"
+    title="Waste collection calendar"
+    loading="lazy"
+    scrolling="no"
+  ></iframe>
+</div>
+
+<style>
+  .waste-calendar-embed {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .waste-calendar-frame {
+    display: block;
+    width: 100%;
+    height: 700px;
+    border: 0;
+    overflow: hidden;
+  }
+</style>
+
+<script>
+  (function () {
+    "use strict";
+
+    var iframe = document.getElementById("waste-calendar-frame-en");
+
+    if (!iframe) {
+      return;
+    }
+
+    window.addEventListener("message", function (event) {
+      if (
+        event.origin !== "https://massimilianopal.github.io" ||
+        event.source !== iframe.contentWindow ||
+        !event.data ||
+        event.data.type !== "waste-calendar:resize"
+      ) {
+        return;
+      }
+
+      var height = Number(event.data.height);
+
+      if (!Number.isFinite(height) || height < 200 || height > 10000) {
+        return;
+      }
+
+      iframe.style.height = Math.ceil(height) + "px";
+    });
+  })();
+</script>
+```
+
+L'altezza iniziale di `700px` è soltanto un fallback: dopo il caricamento viene
+sostituita automaticamente con l'altezza reale del calendario. Non servono
+regole diverse per desktop e mobile.
+
 ## Struttura
 
 ```text

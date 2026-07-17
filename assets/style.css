@@ -98,7 +98,7 @@ a:focus-visible {
   --fc-event-bg-color: transparent;
   --fc-event-border-color: transparent;
   --fc-event-text-color: var(--text);
-  --fc-list-event-hover-bg-color: var(--surface-soft);
+  --fc-list-event-hover-bg-color: var(--surface);
   --fc-neutral-bg-color: var(--surface-soft);
   --fc-page-bg-color: var(--surface);
   --fc-today-bg-color: var(--today-background);
@@ -106,6 +106,18 @@ a:focus-visible {
   color: var(--text);
   font-family: "Poppins", Arial, sans-serif;
   font-size: 0.92rem;
+}
+
+.fc .fc-event,
+.fc .fc-event:hover,
+.fc .fc-event:focus {
+  color: var(--text);
+  cursor: default;
+  text-decoration: none;
+}
+
+.fc .fc-event-time {
+  display: none;
 }
 
 .fc .fc-view-harness,
@@ -193,56 +205,84 @@ a:focus-visible {
 }
 
 .fc .fc-list-event td {
-  padding-block: 0.78rem;
   border-color: var(--border);
   background: var(--surface);
 }
 
-.fc .fc-list-event-time {
-  width: 5.5rem;
-  color: var(--text-muted);
-  font-weight: 500;
-  white-space: nowrap;
-}
-
+.fc .fc-list-event-time,
 .fc .fc-list-event-graphic {
-  width: 1.75rem;
+  display: none;
 }
 
-.fc .fc-list-event-dot {
-  border-color: var(--brand-blue);
-}
-
-.fc .fc-list-event-title {
+.fc .fc-list-event td.fc-list-event-title {
+  position: relative;
   min-width: 0;
+  width: 100%;
+  padding: 0.8rem 0.85rem 0.8rem 2.05rem;
   color: var(--text);
   font-weight: 600;
+  overflow-wrap: anywhere;
+  text-align: left;
+  vertical-align: top;
+  white-space: normal;
+}
+
+.fc .fc-list-event td.fc-list-event-title::before {
+  position: absolute;
+  top: 1.18rem;
+  left: 0.88rem;
+  width: 0.48rem;
+  height: 0.48rem;
+  border-radius: 50%;
+  background: var(--brand-blue);
+  content: "";
 }
 
 .fc .fc-list-event-title a {
   display: block;
+  width: 100%;
   color: var(--text);
+  cursor: default;
   font-weight: 600;
   overflow-wrap: anywhere;
   text-decoration: none;
   white-space: normal;
 }
 
+.fc .fc-list-event:hover td {
+  background: var(--surface);
+}
+
 /* Virtual no-collection Saturdays */
-.fc .no-collection-event td {
+.fc .no-collection-event td,
+.fc .no-collection-event:hover td {
   color: var(--text-muted);
   background: rgba(107, 107, 107, 0.06);
 }
 
-.fc .no-collection-event .fc-list-event-time,
-.fc .no-collection-event .fc-list-event-title,
+.fc .no-collection-event td.fc-list-event-title,
 .fc .no-collection-event .fc-list-event-title a {
   color: var(--text-muted);
   font-weight: 500;
 }
 
-.fc .no-collection-event .fc-list-event-dot {
-  border-color: rgba(107, 107, 107, 0.42);
+.fc .no-collection-event td.fc-list-event-title::before {
+  background: rgba(107, 107, 107, 0.48);
+}
+
+/* Current day in mobile list view */
+.fc .is-current-list-day .fc-list-day-cushion,
+.fc .fc-list-day-cushion.is-current-list-day {
+  background: var(--brand-green-soft);
+  box-shadow: inset 3px 0 0 var(--brand-green);
+}
+
+.fc .is-current-list-day .fc-list-day-text,
+.fc .is-current-list-day .fc-list-day-side-text,
+.fc .fc-list-day-cushion.is-current-list-day .fc-list-day-text,
+.fc .fc-list-day-cushion.is-current-list-day .fc-list-day-side-text {
+  color: var(--brand-blue);
+  font-weight: 700;
 }
 
 /* Desktop month grid */
@@ -357,20 +397,8 @@ a:focus-visible {
     content: "";
   }
 
-  .fc .fc-daygrid-event:hover {
-    color: var(--text);
-    background: var(--surface-soft);
-  }
-
   .fc .fc-daygrid-event-dot {
     display: none;
-  }
-
-  .fc .fc-daygrid-event .fc-event-time {
-    flex-shrink: 0;
-    color: var(--text-muted);
-    font-weight: 500;
-    white-space: nowrap;
   }
 
   .fc .fc-daygrid-event .fc-event-title {

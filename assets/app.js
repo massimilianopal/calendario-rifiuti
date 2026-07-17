@@ -32,6 +32,132 @@
     "GOOGLE_CALENDAR_ID_EN"
   ];
 
+  var allowedParentOrigins = [
+    "https://www.trailverdeeilmare.it",
+    "https://trailverdeeilmare.it"
+  ];
+
+  function getTrustedParentOrigin() {
+    if (window.parent === window || !document.referrer) {
+      return null;
+    }
+
+    try {
+      var parentOrigin = new window.URL(document.referrer).origin;
+      return allowedParentOrigins.indexOf(parentOrigin) !== -1
+        ? parentOrigin
+        : null;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  function createIframeResizeMessenger(pageShell) {
+    var parentOrigin = getTrustedParentOrigin();
+    var lastSentHeight = null;
+    var resizeScheduled = false;
+
+    function measureAndSendHeight() {
+      resizeScheduled = false;
+
+      if (!parentOrigin || !pageShell) {
+        return;
+      }
+
+      var measuredHeight =
+        Math.ceil(pageShell.getBoundingClientRect().height) + 2;
+
+      if (
+        !Number.isFinite(measuredHeight) ||
+        measuredHeight <= 0 ||
+        measuredHeight === lastSentHeight
+      ) {
+        return;
+      }
+
+      lastSentHeight = measuredHeight;
+      window.parent.postMessage(
+        {
+          type: "waste-calendar:resize",
+          height: measuredHeight
+        },
+        parentOrigin
+      );
+    }
+
+    function requestResize() {
+      if (!parentOrigin || !pageShell || resizeScheduled) {
+        return;
+      }
+
+      resizeScheduled = true;
+
+      if (typeof window.requestAnimationFrame === "function") {
+        window.requestAnimationFrame(measureAndSendHeight);
+      } else {
+        window.setTimeout(measureAndSendHeight, 16);
+      }
+    }
+
+    if (parentOrigin && pageShell) {
+      if (typeof window.ResizeObserver === "function") {
+        new window.ResizeObserver(requestResize).observe(pageShell);
+      }
+
+      window.addEventListener("resize", requestResize);
+
+      if (document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(requestResize, function () {});
+      }
+
+      requestResize();
+    }
+
+    return {
+      request: requestResize
+    };
+  }
+
+  function isSameLocalDate(firstDate, secondDate) {
+    return (
+      firstDate.getFullYear() === secondDate.getFullYear() &&
+      firstDate.getMonth() === secondDate.getMonth() &&
+      firstDate.getDate() === secondDate.getDate()
+    );
+  }
+
+  function removeEventUrl(eventData) {
+    var transformedEvent = Object.assign({}, eventData);
+    delete transformedEvent.url;
+    return transformedEvent;
+  }
+
+  function makeEventInformational(info) {
+    var eventElement = info.el;
+    var elementsToClean = [eventElement];
+    var descendantAnchors = eventElement.querySelectorAll("a");
+
+    Array.prototype.push.apply(elementsToClean, descendantAnchors);
+
+    elementsToClean.forEach(function (element) {
+      [
+        "href",
+        "target",
+        "tabindex",
+        "rel",
+        "role",
+        "download",
+        "ping",
+        "referrerpolicy",
+        "draggable",
+        "aria-haspopup",
+        "aria-expanded"
+      ].forEach(function (attributeName) {
+        element.removeAttribute(attributeName);
+      });
+    });
+  }
+
   function hasRealValue(value) {
     return (
       typeof value === "string" &&
@@ -56,8 +182,15 @@
     var calendarElement = document.getElementById("calendar");
     var errorElement = document.getElementById("calendar-error");
     var statusElement = document.getElementById("calendar-status");
+    var pageShell = document.querySelector(".page-shell");
+    var iframeResizeMessenger = createIframeResizeMessenger(pageShell);
+
+    function requestIframeResize() {
+      iframeResizeMessenger.request();
+    }
 
     if (!calendarElement || !errorElement || !statusElement) {
+      requestIframeResize();
       return;
     }
 
@@ -68,16 +201,19 @@
     function showError(message) {
       errorElement.textContent = message;
       errorElement.hidden = false;
+      requestIframeResize();
     }
 
     function hideError() {
       errorElement.textContent = "";
       errorElement.hidden = true;
+      requestIframeResize();
     }
 
     function setLoading(isLoading) {
       statusElement.textContent = isLoading ? messages.loading : "";
       statusElement.hidden = !isLoading;
+      requestIframeResize();
     }
 
     if (typeof window.FullCalendar === "undefined") {
@@ -103,6 +239,7 @@
         googleCalendarId: calendarId,
         success: function (events) {
           hideError();
+          requestIframeResize();
           return events;
         },
         failure: function (error) {
@@ -119,16 +256,30 @@
       height: "auto",
       fixedWeekCount: false,
       dayMaxEventRows: 3,
-      displayEventTime: true,
+      displayEventTime: false,
       displayEventEnd: false,
-      eventTimeFormat:
-        settings.language === "it"
-          ? { hour: "2-digit", minute: "2-digit", hour12: false }
-          : { hour: "numeric", minute: "2-digit" },
       noEventsContent: messages.noEvents,
       loading: setLoading,
+      eventDataTransform: removeEventUrl,
+      eventDidMount: makeEventInformational,
+      dayHeaderClassNames: function (info) {
+        return calendar.view.type === "listMonth" &&
+          isSameLocalDate(info.date, new Date())
+          ? ["is-current-list-day"]
+          : [];
+      },
+      eventsSet: requestIframeResize,
+      datesSet: requestIframeResize,
       eventClick: function (info) {
+        if (!info.jsEvent) {
+          return;
+        }
+
         info.jsEvent.preventDefault();
+
+        if (typeof info.jsEvent.stopPropagation === "function") {
+          info.jsEvent.stopPropagation();
+        }
       }
     });
 
@@ -146,7 +297,7 @@
             {
               title: messages.noCollection,
               daysOfWeek: [6],
-              startTime: "21:00:00",
+              allDay: true,
               classNames: ["no-collection-event"],
               extendedProps: { noCollection: true }
             }
@@ -162,9 +313,12 @@
           calendar.changeView(requiredView);
         }
       }
+
+      requestIframeResize();
     }
 
     calendar.render();
+    requestIframeResize();
     updateResponsiveView(narrowScreen);
 
     if (typeof narrowScreen.addEventListener === "function") {
