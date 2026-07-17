@@ -367,8 +367,10 @@ a:focus-visible {
   }
 
   .fc .fc-daygrid-event .fc-event-time {
+    flex-shrink: 0;
     color: var(--text-muted);
     font-weight: 500;
+    white-space: nowrap;
   }
 
   .fc .fc-daygrid-event .fc-event-title {
